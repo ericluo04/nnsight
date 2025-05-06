@@ -138,7 +138,11 @@ class Img2ImgDiffusionModel(RemoteableMixin):
             lora_scale: Scaling factor for the LoRA weights
             adapter_names: List of adapter names to fuse. If None, fuses all loaded adapters.
         """
-        return self._model.pipeline.fuse_lora(lora_scale=lora_scale, adapter_names=adapter_names)
+        if hasattr(self._model.pipeline, "fuse_lora"):
+            return self._model.pipeline.fuse_lora(lora_scale=lora_scale)
+        else:
+            # For older versions of diffusers
+            return self._model.pipeline.set_adapters("default", adapter_weights=lora_scale)
     
     def unfuse_lora(self):
         """
