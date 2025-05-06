@@ -108,6 +108,65 @@ class Img2ImgDiffusionModel(RemoteableMixin):
         output = self._model(output)
 
         return output
+        
+    # add LoRA capability methods
+    def load_lora_weights(self, pretrained_model_name_or_path, 
+                         weight_name: str = None, 
+                         adapter_name: str = "default", 
+                         **kwargs):
+        """
+        Load LoRA weights into the model.
+        
+        Args:
+            pretrained_model_name_or_path: Path to the LoRA weights or model directory
+            weight_name: Name of the weight file (e.g., "pytorch_lora_weights.safetensors")
+            adapter_name: Name to identify this specific LoRA adapter
+            **kwargs: Additional arguments to pass to the underlying load_lora_weights method
+        """
+        return self._model.pipeline.load_lora_weights(
+            pretrained_model_name_or_path,
+            weight_name=weight_name,
+            adapter_name=adapter_name,
+            **kwargs
+        )
+    
+    def fuse_lora(self, lora_scale: float = 1.0, adapter_names: Optional[List[str]] = None):
+        """
+        Fuse the LoRA weights into the base model weights for inference.
+        
+        Args:
+            lora_scale: Scaling factor for the LoRA weights
+            adapter_names: List of adapter names to fuse. If None, fuses all loaded adapters.
+        """
+        return self._model.pipeline.fuse_lora(lora_scale=lora_scale, adapter_names=adapter_names)
+    
+    def unfuse_lora(self):
+        """
+        Unfuse the LoRA weights from the base model weights.
+        """
+        return self._model.pipeline.unfuse_lora()
+    
+    def unload_lora_weights(self, adapter_names: Optional[List[str]] = None):
+        """
+        Unload LoRA weights from the model.
+        
+        Args:
+            adapter_names: List of adapter names to unload. If None, unloads all adapters.
+        """
+        return self._model.pipeline.unload_lora_weights(adapter_names=adapter_names)
+    
+    def set_lora_scale(self, lora_scale: float, adapter_names: Optional[List[str]] = None):
+        """
+        Set the scaling factor for the LoRA weights.
+        
+        Args:
+            lora_scale: Scaling factor for the LoRA weights
+            adapter_names: List of adapter names to scale. If None, scales all loaded adapters.
+        """
+        if hasattr(self._model.pipeline, "set_adapters_scale"):
+            return self._model.pipeline.set_adapters_scale(lora_scale, adapter_names=adapter_names)
+        else:
+            raise AttributeError("This pipeline does not support setting LoRA scale dynamically.")
 
 
 if TYPE_CHECKING:
