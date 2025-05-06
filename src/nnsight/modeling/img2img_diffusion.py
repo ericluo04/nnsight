@@ -146,14 +146,13 @@ class Img2ImgDiffusionModel(RemoteableMixin):
         """
         return self._model.pipeline.unfuse_lora()
     
-    def unload_lora_weights(self, adapter_names: Optional[List[str]] = None):
+    def unload_lora_weights(self):
         """
         Unload LoRA weights from the model.
         
-        Args:
-            adapter_names: List of adapter names to unload. If None, unloads all adapters.
+        Note: The diffusers API for unload_lora_weights does not accept adapter_names parameter.
         """
-        return self._model.pipeline.unload_lora_weights(adapter_names=adapter_names)
+        return self._model.pipeline.unload_lora_weights()
     
     def set_lora_scale(self, lora_scale: float, adapter_names: Optional[List[str]] = None):
         """
